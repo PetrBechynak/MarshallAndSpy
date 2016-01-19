@@ -4,13 +4,12 @@ package main.java;
  * Created by petr on 9.12.15.
  */
 
-import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import javax.swing.*;
 
 /** Custom Drawing Code Template */
 // Graphics application extends JFrame
@@ -91,6 +90,8 @@ public class DrawingEngine extends JFrame {
             @Override
             public void run() {
                 Board board = new Board();
+                board.generateInitialFigures(new Player(Player.Type.HUMAN));
+                board.generateInitialFigures(new Player(Player.Type.COMPUTER));
                 new DrawingEngine(board); // Let the constructor do the job
             }
         });

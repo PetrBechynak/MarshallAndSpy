@@ -87,6 +87,8 @@ public class Menu extends JFrame  {
                 @Override
                 public void run() {
                     Board board = new Board();
+                    board.generateInitialFigures(new Player(Player.Type.HUMAN));
+                    board.generateInitialFigures(new Player(Player.Type.COMPUTER));
                     new DrawingEngine(board); // Let the constructor do the job
                 }
             });

@@ -2,12 +2,12 @@ package main.java;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.IndexColorModel;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by petr on 9.12.15.
@@ -18,10 +18,36 @@ public class Figure {
     Player owner;
     Coordinates position;
     Double value;
+    String strRepresentation;
     boolean selected;
 
+    @Override
+    public String toString(){
+        return strRepresentation;
+    }
+
+    public void setAttackMoves(ArrayList<CoordVector> attackMoves) {
+        this.attackMoves = attackMoves;
+    }
+
+    public void setType(FigureType type) {
+        this.type = type;
+    }
+
+    public void setOwner(Player owner) {
+        this.owner = owner;
+    }
+
+    public void setValue(Double value) {
+        this.value = value;
+    }
+
+    public void setMoves(ArrayList<CoordVector> moves) {
+        this.moves = moves;
+    }
+
     public Figure deepClone(){
-        Figure newFig=null;
+        Figure newFig=new Figure(this.getType(),this.getOwner(),this.getPosition());
         return newFig;
     }
 
@@ -83,40 +109,52 @@ public class Figure {
 
         if (this.type.equals(FigureType.FLAG)) {
             this.value = 1000.0;
+            strRepresentation="F";
         }
         else if (this.type.equals(FigureType.SPY)) {
             this.value = 10.0;
+            strRepresentation="S";
         }
         else if (this.type.equals(FigureType.MINE)) {
             this.value = 1.0;
+            strRepresentation="B";
         }
         else if (this.type.equals(FigureType.MINER)) {
             this.value = 2.0;
+            strRepresentation="M";
         }
         else if (this.type.equals(FigureType.RAIDER)) {
             this.value = 3.0;
+            strRepresentation="R";
         }
         else if (this.type.equals(FigureType.SHOOTER)) {
             this.value = 4.0;
+            strRepresentation="H";
         }
         else if (this.type.equals(FigureType.CAPRAL)) {
             this.value = 5.0;
+            strRepresentation="C";
         }
         else if (this.type.equals(FigureType.CADET)) {
             this.value = 7.0;
+            strRepresentation="T";
         }
         else if (this.type.equals(FigureType.CAPITAN)) {
             this.value = 10.0;
+            strRepresentation="N";
         }
         else if (this.type.equals(FigureType.GENERAL)) {
             this.value = 15.0;
+            strRepresentation="G";
         }
         else if (this.type.equals(FigureType.MARSHAL)) {
             this.value = 20.0;
+            strRepresentation="L";
         }
 
         if (owner.getType().equals(Player.Type.COMPUTER)) {
             this.value = -this.value;
+            strRepresentation=strRepresentation.toLowerCase();
         }
 
     }

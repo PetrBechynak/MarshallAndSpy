@@ -10,7 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-import static java.util.stream.Collectors.*;
+
+import static java.util.stream.Collectors.toCollection;
 
 /**
  * Created by petr on 9.12.15.
@@ -20,9 +21,9 @@ public class Board extends ArrayList<Figure> {
 
     public Board() {
 
-        generateInitialFigures(new Player(Player.Type.HUMAN));
-        generateInitialFigures(new Player(Player.Type.COMPUTER));
     }
+
+
 
     public void generateInitialFigures(Player p) {
 
@@ -120,10 +121,15 @@ public class Board extends ArrayList<Figure> {
     }
 
     public void computerTurn(){
-        Figure movingFigure=null;
-        Coordinates finalDest=null;
         AI ai = new AI(this);
-        //movingFigure.setPosition(finalDest);
+        ai.addDeeperNodes(0);
+        ai.printEvaluations(0);
+        ai.addDeeperNodes(1);
+        ai.printEvaluations(1);
+
+        Board bestMove = ai.getBestMove();
+        this.clear();
+        this.addAll(bestMove);
     };
 
     public void checkWin() {
@@ -146,6 +152,22 @@ public class Board extends ArrayList<Figure> {
 
         }
 
+    }
+    @Override
+    public String toString(){
+    String s = "";
+        Integer i,j;
+        for (i=0;i<=11;i++) {
+            for (j=0;j<=11;j++) {
+                if (getFigureAtGrid(j,i)==null){
+                    s=s+" ";
+                } else {
+                    s=s + this.getFigureAtGrid(j,i).toString();
+                }
+            }
+            s=s+"\n";
+        }
+    return s;
     }
 
     public boolean attack(int x,int y){
@@ -183,7 +205,7 @@ public class Board extends ArrayList<Figure> {
 
     public Boolean attackerWin(int xDefender, int yDefender, Figure attackerFigure)
     {
-        Figure defender = getFigureAt(xDefender,yDefender);
+        Figure defender = getFigureAtPixel(xDefender, yDefender);
         return attackerFigure.beats(defender);
     }
 
@@ -227,23 +249,34 @@ public class Board extends ArrayList<Figure> {
         return successfulMove;
     }
 
-    public Board getNewBoardMoveCompFig(CoordVector coordVector, Figure fig){
+    public Board deepCopy(){
+        Board newBoard = new Board();
+        for (Figure fig: this) {
+            newBoard.add(fig.deepClone());
+        }
+        return newBoard;
+    };
+
+    public Board getNewBoardMoveCompFig(CoordVector attackMove, Figure parentMovingFigure){
         Board newBoard = this.stream().map(d -> d.deepClone()).collect(toCollection(Board::new));
 
-        for (Figure figToMove: newBoard) {
-            if (    fig.getPosition().getX().equals(figToMove.getPosition().getX()) &
-                    fig.getPosition().getY().equals(figToMove.getPosition().getY())    ) {
-                figToMove.setPosition(new Coordinates(coordVector.getX(), coordVector.getY()));
-            //XXXX
+        Figure movingFigure = newBoard.getFigureAtGrid(parentMovingFigure.getPosition());
+        Figure figureAtDestination = newBoard.getFigureAtGrid(movingFigure.vectorMove(attackMove).getPosition());
+        if (figureAtDestination==null) {
+            movingFigure.setPosition(movingFigure.vectorMove(attackMove).getPosition());
+        } else {
+            if (movingFigure.beats(figureAtDestination))
+            {
+                newBoard.removeFigure(figureAtDestination);
+                movingFigure.setPosition(figureAtDestination.getPosition());
+            } else {
+                newBoard.removeFigure(movingFigure);
             }
+        }
 
-        }
-        if (newBoard == this) {
-            System.out.println(" plati ==");
-        }
-        if (newBoard.equals(this)) {
-            System.out.println(" plati equals");
-        }
+        System.out.println("movingFigure: " + movingFigure.getType() + " " + movingFigure.getOwner().getType() + " is now at " + movingFigure.getPosition().getX() + "," + movingFigure.getPosition().getY() + " move:" + attackMove.getX() + "," + attackMove.getY());
+//        System.out.println("figureAtDestination: " + figureAtDestination.getType() + " " + figureAtDestination.getOwner().getType() + " " + figureAtDestination.getPosition().getX() + "," + figureAtDestination.getPosition().getY());
+
         return newBoard;
 
     }
@@ -274,13 +307,47 @@ public class Board extends ArrayList<Figure> {
         return foundLegalAttackMove;
     }
 
-    public boolean isLegalAttackMoveComp(CoordVector coordVector, Figure fig) {
+    public boolean raidersLeapAttackOk(Figure figRaider,CoordVector leapAttackMove){
+        Integer xDir = leapAttackMove.getX()==0 ? 0 : leapAttackMove.getX() / Math.abs(leapAttackMove.getX());
+        Integer yDir = leapAttackMove.getY()==0 ? 0 : leapAttackMove.getY() / Math.abs(leapAttackMove.getY());
+        Integer xTimes =  Math.abs(leapAttackMove.getX());
+        Integer yTimes =  Math.abs(leapAttackMove.getY());
+        Integer times = Math.max(xTimes, yTimes);
+        Integer i;
+        CoordVector hop;
+        boolean leapAttackOk=true;
+
+        for (i=1;i<=times-1;i++) {
+            hop = new CoordVector(i*xDir,i*yDir);
+            if (!isFreePosition(figRaider.vectorMove(hop).getPosition())) {
+                leapAttackOk = false;
+            }
+        }
+
+        return leapAttackOk;
+    }
+
+    public boolean isLegalAttackMoveComp(Player.Type me, CoordVector potentialAttackMove, Figure fig) {
         boolean foundLegalAttackMove = false;
 
+        Figure anotherFigureAt = getFigureAtGrid(fig.vectorMove(potentialAttackMove).getPosition().getX(), fig.vectorMove(potentialAttackMove).getPosition().getY());
+
         for (CoordVector attackMove: fig.attackMoves) {
-            if (fig.vectorMove(attackMove).getPosition().equals(
-                    new Coordinates(coordVector.getX(),coordVector.getY()))) {
-                foundLegalAttackMove = true;
+            if (fig.vectorMove(potentialAttackMove).getPosition().getX()>=0 & fig.vectorMove(potentialAttackMove).getPosition().getY()>=0
+                    & fig.vectorMove(potentialAttackMove).getPosition().getX()<=11 & fig.vectorMove(potentialAttackMove).getPosition().getY()<=11
+                    & potentialAttackMove.equals(attackMove)
+                    & raidersLeapAttackOk(fig,attackMove)) {
+                if (anotherFigureAt==null)
+                {
+                    foundLegalAttackMove = true;
+                }
+                else if  (anotherFigureAt.getPosition().equals(fig.vectorMove(attackMove).getPosition())
+                        & anotherFigureAt.getOwner().getType().equals(me)) {
+                    foundLegalAttackMove = false;
+                } else {
+                    foundLegalAttackMove = true;
+                }
+
             }
         }
         return foundLegalAttackMove;
@@ -332,13 +399,35 @@ public class Board extends ArrayList<Figure> {
         }
     }
 
-    public Figure getFigureAt(Integer x, Integer y) {
+    public Figure getFigureAtPixel(Integer x, Integer y) {
         Figure result=null;
         for (Figure fig : Board.this) {
             if (    x > fig.getPosition().getX()*DrawingEngine.FIGURE_SIZE &
                     x < (fig.getPosition().getX()+1)*DrawingEngine.FIGURE_SIZE &
                     y > fig.getPosition().getY()*DrawingEngine.FIGURE_SIZE &
                     y < (fig.getPosition().getY()+1)*DrawingEngine.FIGURE_SIZE) {
+                result = fig;
+            }
+        }
+        return result;
+    }
+
+    public Figure getFigureAtGrid(Integer x, Integer y) {
+        Figure result=null;
+        for (Figure fig : this) {
+            if (    x.equals(fig.getPosition().getX()) &
+                    y.equals(fig.getPosition().getY())) {
+                result = fig;
+            }
+        }
+        return result;
+    }
+
+    public Figure getFigureAtGrid(Coordinates coord) {
+        Figure result=null;
+        for (Figure fig : this) {
+            if (    coord.getX().equals(fig.getPosition().getX()) &
+                    coord.getY().equals(fig.getPosition().getY())) {
                 result = fig;
             }
         }

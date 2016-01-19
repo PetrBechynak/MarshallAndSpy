@@ -15,6 +15,25 @@ public class CoordVector {
         return x;
     }
 
+    @Override
+    public String toString() {
+        return "X=" + x + " Y=" + y;
+    }
+
+    @Override
+    public boolean equals(Object obj){
+        CoordVector coordVect = (CoordVector) obj;
+        if (this.getX().equals(coordVect.getX()) & this.getY().equals(coordVect.getY())) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public CoordVector minus(CoordVector cv) {
+        return new CoordVector(this.getX()-cv.getX(),this.getY()-cv.getY());
+    }
+
     public Integer getY() {
         return y;
     }
