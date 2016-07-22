@@ -28,30 +28,30 @@ public class Board extends ArrayList<Figure> {
     public void generateInitialFigures(Player p) {
 
         Integer i;
-        for (i=1;i<=8;i++) {
-            add(new Figure(Figure.FigureType.MINE, p, getRandomFreeStartPosition(p)));
-        }
-        for (i=1;i<=6;i++) {
-            add(new Figure(Figure.FigureType.MINER,p, getRandomFreeStartPosition(p)));
-        }
-        for (i=1;i<=8;i++) {
+//        for (i=1;i<=8;i++) {
+//            add(new Figure(Figure.FigureType.MINE, p, getRandomFreeStartPosition(p)));
+//        }
+//        for (i=1;i<=6;i++) {
+//            add(new Figure(Figure.FigureType.MINER,p, getRandomFreeStartPosition(p)));
+//        }
+        for (i=1;i<=1;i++) {
             add(new Figure(Figure.FigureType.RAIDER, p, getRandomFreeStartPosition(p)));
         }
         for (i=1;i<=5;i++) {
             add(new Figure(Figure.FigureType.SHOOTER,p, getRandomFreeStartPosition(p)));
         }
-        for (i=1;i<=4;i++) {
-            add(new Figure(Figure.FigureType.CAPRAL,p, getRandomFreeStartPosition(p)));
-        }
-        for (i=1;i<=3;i++) {
-            add(new Figure(Figure.FigureType.CADET,p, getRandomFreeStartPosition(p)));
-        }
-        for (i=1;i<=2;i++) {
-            add(new Figure(Figure.FigureType.CAPITAN,p, getRandomFreeStartPosition(p)));
-        }
-        add(new Figure(Figure.FigureType.GENERAL,p, getRandomFreeStartPosition(p)));
-        add(new Figure(Figure.FigureType.MARSHAL,p, getRandomFreeStartPosition(p)));
-        add(new Figure(Figure.FigureType.SPY, p, getRandomFreeStartPosition(p)));
+//        for (i=1;i<=4;i++) {
+//            add(new Figure(Figure.FigureType.CAPRAL,p, getRandomFreeStartPosition(p)));
+//        }
+//        for (i=1;i<=3;i++) {
+//            add(new Figure(Figure.FigureType.CADET,p, getRandomFreeStartPosition(p)));
+//        }
+//        for (i=1;i<=2;i++) {
+//            add(new Figure(Figure.FigureType.CAPITAN,p, getRandomFreeStartPosition(p)));
+//        }
+//        add(new Figure(Figure.FigureType.GENERAL,p, getRandomFreeStartPosition(p)));
+//        add(new Figure(Figure.FigureType.MARSHAL,p, getRandomFreeStartPosition(p)));
+//        add(new Figure(Figure.FigureType.SPY, p, getRandomFreeStartPosition(p)));
         add(new Figure(Figure.FigureType.FLAG, p, getRandomFreeStartPosition(p)));
 
     }
@@ -126,6 +126,13 @@ public class Board extends ArrayList<Figure> {
         ai.printEvaluations(0);
         ai.addDeeperNodes(1);
         ai.printEvaluations(1);
+        ai.addDeeperNodes(2);
+        ai.printEvaluations(2);
+        ai.addDeeperNodes(3);
+        ai.printEvaluations(3);
+        ai.addDeeperNodes(4);
+        ai.printEvaluations(4);
+
 
         Board bestMove = ai.getBestMove();
         this.clear();
@@ -265,7 +272,12 @@ public class Board extends ArrayList<Figure> {
         if (figureAtDestination==null) {
             movingFigure.setPosition(movingFigure.vectorMove(attackMove).getPosition());
         } else {
-            if (movingFigure.beats(figureAtDestination))
+            //System.out.println(movingFigure);
+            //System.out.println(figureAtDestination);
+            if (movingFigure.beats(figureAtDestination)==null){
+
+            }
+            else if (movingFigure.beats(figureAtDestination))
             {
                 newBoard.removeFigure(figureAtDestination);
                 movingFigure.setPosition(figureAtDestination.getPosition());
@@ -274,7 +286,7 @@ public class Board extends ArrayList<Figure> {
             }
         }
 
-        System.out.println("movingFigure: " + movingFigure.getType() + " " + movingFigure.getOwner().getType() + " is now at " + movingFigure.getPosition().getX() + "," + movingFigure.getPosition().getY() + " move:" + attackMove.getX() + "," + attackMove.getY());
+        //System.out.println("movingFigure: " + movingFigure.getType() + " " + movingFigure.getOwner().getType() + " is now at " + movingFigure.getPosition().getX() + "," + movingFigure.getPosition().getY() + " move:" + attackMove.getX() + "," + attackMove.getY());
 //        System.out.println("figureAtDestination: " + figureAtDestination.getType() + " " + figureAtDestination.getOwner().getType() + " " + figureAtDestination.getPosition().getX() + "," + figureAtDestination.getPosition().getY());
 
         return newBoard;

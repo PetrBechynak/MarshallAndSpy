@@ -184,8 +184,9 @@ public class Figure {
     }
 
     public Boolean beats(Figure defender) {
+        //System.out.println("beats");
         Boolean result = false;
-        if (this.type.equals(defender.getType())) { return null;
+        if (this.type.equals(defender.getType())) {return null;
         } else if(this.type.equals(FigureType.MARSHAL) & defender.getType().equals(FigureType.GENERAL)) {result = true;
         } else if(this.type.equals(FigureType.MARSHAL) & defender.getType().equals(FigureType.CAPITAN)) {result = true;
         } else if(this.type.equals(FigureType.MARSHAL) & defender.getType().equals(FigureType.CADET)) {result = true;
