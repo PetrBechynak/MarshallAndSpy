@@ -22,12 +22,56 @@ public class Figure {
     boolean selected;
 
     @Override
+    public boolean equals(Object fig){
+        if (!fig.getClass().equals(Figure.class)) return false;
+        Figure figure = (Figure) fig;
+        if (!figure.getOwner().equals(this.owner)) return false;
+        if (!figure.type.equals(this.type)) return false;
+        if (!figure.getPosition().equals(this.position)) return false;
+        return true;
+    }
+
+    @Override
+    public int hashCode(){
+        return position.getX()*100+position.getY();
+    }
+
+    void setRaiderPositionInFrontOfRaider(Figure secondRaider){
+        if (isType(FigureType.RAIDER) && secondRaider.isType(FigureType.RAIDER)) {
+            CoordVector diffVector = new CoordVector(position.getX()-secondRaider.getPosition().getX(),position.getY()-secondRaider.getPosition().getY());
+            if (diffVector.getX().equals(0)){
+                if (diffVector.getY()>0) position=secondRaider.getPosition().down();
+                if (diffVector.getY()<0) position=secondRaider.getPosition().up();
+            } else {
+                if (diffVector.getX()<0) position=secondRaider.getPosition().right();
+                if (diffVector.getX()<0) position=secondRaider.getPosition().left();
+            }
+
+        }
+    }
+
+    boolean isType(FigureType figureType) {
+        return type.equals(figureType);
+    }
+
+    boolean hasOwner(Player.Type player) { return player.equals(owner.getType());}
+
+    boolean moveIsOutOfBoard(CoordVector move){
+        if (
+        vectorMove(move).getPosition().getX()>=0 && vectorMove(move).getPosition().getY()>=0
+                && vectorMove(move).getPosition().getX()<=11 && vectorMove(move).getPosition().getY()<=11){
+            return false;
+        }
+        return true;
+    }
+
+    @Override
     public String toString(){
         return strRepresentation;
     }
 
-    public void setAttackMoves(ArrayList<CoordVector> attackMoves) {
-        this.attackMoves = attackMoves;
+    public void setAllowedAttackMoves(ArrayList<CoordVector> allowedAttackMoves) {
+        this.allowedAttackMoves = allowedAttackMoves;
     }
 
     public void setType(FigureType type) {
@@ -42,8 +86,8 @@ public class Figure {
         this.value = value;
     }
 
-    public void setMoves(ArrayList<CoordVector> moves) {
-        this.moves = moves;
+    public void setAllowedMoves(ArrayList<CoordVector> allowedMoves) {
+        this.allowedMoves = allowedMoves;
     }
 
     public Figure deepClone(){
@@ -59,8 +103,8 @@ public class Figure {
         this.position = position;
     }
 
-    ArrayList<CoordVector> moves = new ArrayList<CoordVector>();
-    ArrayList<CoordVector> attackMoves = new ArrayList<CoordVector>();
+    ArrayList<CoordVector> allowedMoves = new ArrayList<CoordVector>();
+    ArrayList<CoordVector> allowedAttackMoves = new ArrayList<CoordVector>();
 
     public Figure(FigureType type, Player owner, Coordinates position) {
         Integer i;
@@ -69,41 +113,41 @@ public class Figure {
         this.position = position;
         this.selected = false;
         if (type.equals(FigureType.FLAG) | type.equals(FigureType.MINE)) {
-            moves.clear();
+            allowedMoves.clear();
         } else if(type.equals(FigureType.RAIDER)) {
             for (i=-11;i<12;i++) {
-                moves.add(new CoordVector(0, i));
-                moves.add(new CoordVector(i, 0));
+                allowedMoves.add(new CoordVector(0, i));
+                allowedMoves.add(new CoordVector(i, 0));
             }
-            moves.add(new CoordVector(-1, -1));
-            moves.add(new CoordVector(-1, 1));
-            moves.add(new CoordVector(1, 1));
-            moves.add(new CoordVector(1, -1));
+            allowedMoves.add(new CoordVector(-1, -1));
+            allowedMoves.add(new CoordVector(-1, 1));
+            allowedMoves.add(new CoordVector(1, 1));
+            allowedMoves.add(new CoordVector(1, -1));
         } else {
-            moves.add(new CoordVector(-1, -1));
-            moves.add(new CoordVector(-1, 1));
-            moves.add(new CoordVector(1, 1));
-            moves.add(new CoordVector(1, -1));
+            allowedMoves.add(new CoordVector(-1, -1));
+            allowedMoves.add(new CoordVector(-1, 1));
+            allowedMoves.add(new CoordVector(1, 1));
+            allowedMoves.add(new CoordVector(1, -1));
 
-            moves.add(new CoordVector(0, -1));
-            moves.add(new CoordVector(0, 1));
-            moves.add(new CoordVector(-1, 0));
-            moves.add(new CoordVector(1, 0));
+            allowedMoves.add(new CoordVector(0, -1));
+            allowedMoves.add(new CoordVector(0, 1));
+            allowedMoves.add(new CoordVector(-1, 0));
+            allowedMoves.add(new CoordVector(1, 0));
 
         }
 
         if (type.equals(FigureType.FLAG) | type.equals(FigureType.MINE)) {
-            attackMoves.clear();
+            allowedAttackMoves.clear();
         } else if(type.equals(FigureType.RAIDER)) {
             for (i=-11;i<12;i++) {
-                attackMoves.add(new CoordVector(0, i));
-                attackMoves.add(new CoordVector(i, 0));
+                allowedAttackMoves.add(new CoordVector(0, i));
+                allowedAttackMoves.add(new CoordVector(i, 0));
             }
         } else {
-            attackMoves.add(new CoordVector(0, -1));
-            attackMoves.add(new CoordVector(0, 1));
-            attackMoves.add(new CoordVector(-1, 0));
-            attackMoves.add(new CoordVector(1, 0));
+            allowedAttackMoves.add(new CoordVector(0, -1));
+            allowedAttackMoves.add(new CoordVector(0, 1));
+            allowedAttackMoves.add(new CoordVector(-1, 0));
+            allowedAttackMoves.add(new CoordVector(1, 0));
 
         }
 

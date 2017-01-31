@@ -66,7 +66,7 @@ public class DrawingEngine extends JFrame {
             //System.out.println("Mouse Clicked: ("
             //        + e.getX() +", "+e.getY() +")");
             logger.debug("click!");
-            board.manageClick(e.getX(), e.getY());
+            board.manageClick(e.getX() / DrawingEngine.FIGURE_SIZE, e.getY() / DrawingEngine.FIGURE_SIZE);
             repaint();
         }
 

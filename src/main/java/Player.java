@@ -14,4 +14,11 @@ public class Player {
     public Type getType() {
         return type;
     }
+    @Override
+
+    public boolean equals(Object o){
+        if (!o.getClass().equals(Player.class)) return false;
+        Player player = (Player) o;
+        return this.getType()==player.type;
+    }
 }

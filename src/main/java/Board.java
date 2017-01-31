@@ -8,9 +8,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Random;
 
+import static java.lang.Math.abs;
 import static java.util.stream.Collectors.toCollection;
 
 /**
@@ -28,30 +30,30 @@ public class Board extends ArrayList<Figure> {
     public void generateInitialFigures(Player p) {
 
         Integer i;
-//        for (i=1;i<=8;i++) {
-//            add(new Figure(Figure.FigureType.MINE, p, getRandomFreeStartPosition(p)));
-//        }
-//        for (i=1;i<=6;i++) {
-//            add(new Figure(Figure.FigureType.MINER,p, getRandomFreeStartPosition(p)));
-//        }
-        for (i=1;i<=1;i++) {
+        for (i=1;i<=8;i++) {
+            add(new Figure(Figure.FigureType.MINE, p, getRandomFreeStartPosition(p)));
+        }
+        for (i=1;i<=6;i++) {
+            add(new Figure(Figure.FigureType.MINER,p, getRandomFreeStartPosition(p)));
+        }
+        for (i=1;i<=8;i++) {
             add(new Figure(Figure.FigureType.RAIDER, p, getRandomFreeStartPosition(p)));
         }
         for (i=1;i<=5;i++) {
             add(new Figure(Figure.FigureType.SHOOTER,p, getRandomFreeStartPosition(p)));
         }
-//        for (i=1;i<=4;i++) {
-//            add(new Figure(Figure.FigureType.CAPRAL,p, getRandomFreeStartPosition(p)));
-//        }
-//        for (i=1;i<=3;i++) {
-//            add(new Figure(Figure.FigureType.CADET,p, getRandomFreeStartPosition(p)));
-//        }
-//        for (i=1;i<=2;i++) {
-//            add(new Figure(Figure.FigureType.CAPITAN,p, getRandomFreeStartPosition(p)));
-//        }
-//        add(new Figure(Figure.FigureType.GENERAL,p, getRandomFreeStartPosition(p)));
-//        add(new Figure(Figure.FigureType.MARSHAL,p, getRandomFreeStartPosition(p)));
-//        add(new Figure(Figure.FigureType.SPY, p, getRandomFreeStartPosition(p)));
+        for (i=1;i<=4;i++) {
+            add(new Figure(Figure.FigureType.CAPRAL,p, getRandomFreeStartPosition(p)));
+        }
+        for (i=1;i<=3;i++) {
+            add(new Figure(Figure.FigureType.CADET,p, getRandomFreeStartPosition(p)));
+        }
+        for (i=1;i<=2;i++) {
+            add(new Figure(Figure.FigureType.CAPITAN,p, getRandomFreeStartPosition(p)));
+        }
+        add(new Figure(Figure.FigureType.GENERAL,p, getRandomFreeStartPosition(p)));
+        add(new Figure(Figure.FigureType.MARSHAL,p, getRandomFreeStartPosition(p)));
+        add(new Figure(Figure.FigureType.SPY, p, getRandomFreeStartPosition(p)));
         add(new Figure(Figure.FigureType.FLAG, p, getRandomFreeStartPosition(p)));
 
     }
@@ -92,16 +94,16 @@ public class Board extends ArrayList<Figure> {
 
     }
 
-    public void manageClick(int x, int y) {
+    public void manageClick(Integer x, Integer y) {
         logger.debug("manage click");
         if (clickedOnHumanFigure(x,y)) {
             unselectAllFigures();
-            selectFigure(x, y);
+            selectFigure(x,y);
         } else if (clickedOnComputerFigure(x,y) & humanFigureSelected()) {
             //System.out.println("attack");
-            if(attack(x, y)) {
+            if(attack(x,y)) {
                 checkWin();
-                //randomComputerTurn();
+//                randomComputerTurn();
                 computerTurn();
                 checkWin();
             //    System.out.println("Computers plays after attack...");
@@ -111,7 +113,7 @@ public class Board extends ArrayList<Figure> {
             if (move(x,y)) {
                 System.out.println("Computers plays after move...");
                 checkWin();
-                //randomComputerTurn();
+//                randomComputerTurn();
                 computerTurn();
                 checkWin();
             };
@@ -126,12 +128,12 @@ public class Board extends ArrayList<Figure> {
         ai.printEvaluations(0);
         ai.addDeeperNodes(1);
         ai.printEvaluations(1);
-        ai.addDeeperNodes(2);
-        ai.printEvaluations(2);
-        ai.addDeeperNodes(3);
-        ai.printEvaluations(3);
-        ai.addDeeperNodes(4);
-        ai.printEvaluations(4);
+//        ai.addDeeperNodes(2);
+//        ai.printEvaluations(2);
+//        ai.addDeeperNodes(3);
+//        ai.printEvaluations(3);
+//        ai.addDeeperNodes(4);
+//        ai.printEvaluations(4);
 
 
         Board bestMove = ai.getBestMove();
@@ -166,10 +168,10 @@ public class Board extends ArrayList<Figure> {
         Integer i,j;
         for (i=0;i<=11;i++) {
             for (j=0;j<=11;j++) {
-                if (getFigureAtGrid(j,i)==null){
+                if (getFigureAtPosition(j,i)==null){
                     s=s+" ";
                 } else {
-                    s=s + this.getFigureAtGrid(j,i).toString();
+                    s=s + this.getFigureAtPosition(j,i).toString();
                 }
             }
             s=s+"\n";
@@ -177,26 +179,26 @@ public class Board extends ArrayList<Figure> {
     return s;
     }
 
-    public boolean attack(int x,int y){
-        Integer newX;
-        Integer newY;
-        newX = x / DrawingEngine.FIGURE_SIZE;
-        newY = y / DrawingEngine.FIGURE_SIZE;
+    public boolean attack(Integer xDestination,Integer yDestination){
         boolean successfulAttack = false;
 
         for (Figure figToMove: Board.this) {
             if (figToMove.isSelected()) {
-                if (isLegalAttackMove(x, y, figToMove)){
-                    if(attackerWin(x, y, figToMove)==null) {
+                if (isLegalAttackMove(xDestination, yDestination, figToMove)){
+                    if(attackerWin(xDestination, yDestination, figToMove)==null) {
                         //System.out.println("draw!");
+                        if (figToMove.isType(Figure.FigureType.RAIDER)
+                                && getFigureAtPosition(new Coordinates(xDestination,yDestination)).isType(Figure.FigureType.RAIDER) ){
+                            figToMove.setRaiderPositionInFrontOfRaider(getFigureAtPosition(new Coordinates(xDestination,yDestination)));
+                        }
                         break;
-                    } else if (attackerWin(x, y, figToMove).equals(true)) {
-                        removeFigureAt(x, y);
+                    } else if (attackerWin(xDestination, yDestination, figToMove).equals(true)) {
+                        removeFigureAt(xDestination, yDestination);
                         //System.out.println("attacker won!");
-                        figToMove.setPosition(new Coordinates(newX, newY));
+                        figToMove.setPosition(new Coordinates(xDestination, yDestination));
                         successfulAttack=true;
                         break;
-                    } else if(attackerWin(x, y, figToMove).equals(false)) {
+                    } else if(attackerWin(xDestination, yDestination, figToMove).equals(false)) {
                         this.removeFigure(figToMove);
                         //System.out.println("defender won!");
                         successfulAttack=true;
@@ -210,9 +212,9 @@ public class Board extends ArrayList<Figure> {
         return successfulAttack;
     }
 
-    public Boolean attackerWin(int xDefender, int yDefender, Figure attackerFigure)
+    public Boolean attackerWin(Integer xDefender, Integer yDefender, Figure attackerFigure)
     {
-        Figure defender = getFigureAtPixel(xDefender, yDefender);
+        Figure defender = getFigureAtPosition(xDefender, yDefender);
         return attackerFigure.beats(defender);
     }
 
@@ -226,28 +228,22 @@ public class Board extends ArrayList<Figure> {
 
     }
 
-    public void removeFigureAt(int x, int y){
+    public void removeFigureAt(Integer x, Integer y){
         for (Figure fig : Board.this) {
-            if (    x > fig.getPosition().getX()*DrawingEngine.FIGURE_SIZE &
-                    x < (fig.getPosition().getX()+1)*DrawingEngine.FIGURE_SIZE &
-                    y > fig.getPosition().getY()*DrawingEngine.FIGURE_SIZE &
-                    y < (fig.getPosition().getY()+1)*DrawingEngine.FIGURE_SIZE ) {
+            if (    x.equals(fig.getPosition().getX()) &&
+                    y.equals(fig.getPosition().getY()) ) {
                 this.removeFigure(fig);
                 break;
             }
         }
     }
 
-    public boolean move(int x,int y){
-        Integer newX;
-        Integer newY;
+    public boolean move(Integer x,Integer y){
         Boolean successfulMove = false;
-        newX = x / DrawingEngine.FIGURE_SIZE;
-        newY = y / DrawingEngine.FIGURE_SIZE;
         for (Figure figToMove: Board.this) {
             if (figToMove.isSelected()) {
-                if (isLegalMove(x, y, figToMove)){
-                    figToMove.setPosition(new Coordinates(newX, newY));
+                if (isLegalMove(new Coordinates(x,y), figToMove)){
+                    figToMove.setPosition(new Coordinates(x, y));
                     successfulMove = true;
                 }
 
@@ -264,23 +260,29 @@ public class Board extends ArrayList<Figure> {
         return newBoard;
     };
 
-    public Board getNewBoardMoveCompFig(CoordVector attackMove, Figure parentMovingFigure){
-        Board newBoard = this.stream().map(d -> d.deepClone()).collect(toCollection(Board::new));
+    // vraci board takovej, jak by vypadal, kdyby figura movingFigure zautocila s vektorem attackMove
+    public Board getNewBoardMoveOrAttackCompFig(CoordVector attackMove, Figure movingFigure){
+        Board newBoard = this.stream().map(Figure::deepClone).collect(toCollection(Board::new));
 
-        Figure movingFigure = newBoard.getFigureAtGrid(parentMovingFigure.getPosition());
-        Figure figureAtDestination = newBoard.getFigureAtGrid(movingFigure.vectorMove(attackMove).getPosition());
-        if (figureAtDestination==null) {
+         Figure figureAtDestination = newBoard.getFigureAtPosition(movingFigure.vectorMove(attackMove).getPosition());
+        // Nejezdec jde na volne pole
+        if (figureAtDestination==null && !movingFigure.isType(Figure.FigureType.RAIDER)) {
             movingFigure.setPosition(movingFigure.vectorMove(attackMove).getPosition());
-        } else {
+        // Jezdec na volne pole
+        } else if (figureAtDestination==null && movingFigure.isType(Figure.FigureType.RAIDER)) {
+            if (isFreePathInRaidersLeapAttack(movingFigure,attackMove))
+                movingFigure.setPosition(movingFigure.vectorMove(attackMove).getPosition());
+        // Bud to neni jezdec, anebo je to jezdec na obsazene pole s volnou cestou pred sebou
+        } else if (!(movingFigure.isType(Figure.FigureType.RAIDER)) || isFreePathInRaidersLeapAttack(movingFigure, attackMove))
+            {
             //System.out.println(movingFigure);
             //System.out.println(figureAtDestination);
             if (movingFigure.beats(figureAtDestination)==null){
-
             }
             else if (movingFigure.beats(figureAtDestination))
             {
+                newBoard.getFigureAtPosition(movingFigure.getPosition()).setPosition(figureAtDestination.getPosition());
                 newBoard.removeFigure(figureAtDestination);
-                movingFigure.setPosition(figureAtDestination.getPosition());
             } else {
                 newBoard.removeFigure(movingFigure);
             }
@@ -293,14 +295,22 @@ public class Board extends ArrayList<Figure> {
 
     }
 
-    public boolean isLegalMove(Integer x, Integer y, Figure fig) {
+    public boolean isLegalMove(Coordinates destination, Figure fig) {
         boolean foundLegalMove = false;
-        Integer destinationX = x / DrawingEngine.FIGURE_SIZE;
-        Integer destinationY = y / DrawingEngine.FIGURE_SIZE;
-
-        for (CoordVector move: fig.moves) {
-            if (fig.vectorMove(move).getPosition().equals(new Coordinates(destinationX, destinationY))) {
+        for (CoordVector move: fig.allowedMoves) {
+            if (fig.vectorMove(move).getPosition().equals(destination)) {
                 foundLegalMove = true;
+            }
+            if (fig.isType(Figure.FigureType.RAIDER)){
+                CoordVector vectorDiff= new CoordVector(destination.getX()-fig.getPosition().getX(), destination.getY()-fig.getPosition().getY());
+                Integer vectorLen = abs(vectorDiff.getX()) + abs(vectorDiff.getY());
+                CoordVector unitVector = new CoordVector(vectorDiff.getX()/vectorLen, vectorDiff.getY()/vectorLen);
+                Coordinates inspectedRaiderPath = fig.getPosition();
+                if (vectorDiff.getX()*vectorDiff.getY()==0) // pouze pro nediagonalni tahy
+                    for (int i=1;i<=vectorLen-1;i++){
+                        inspectedRaiderPath = inspectedRaiderPath.moveCoordinates(unitVector);
+                        if (!isFreePosition(inspectedRaiderPath)) foundLegalMove=false;
+                    }
             }
         }
         return foundLegalMove;
@@ -308,22 +318,21 @@ public class Board extends ArrayList<Figure> {
 
     public boolean isLegalAttackMove(Integer x, Integer y, Figure fig) {
         boolean foundLegalAttackMove = false;
-        Integer destinationX = x / DrawingEngine.FIGURE_SIZE;
-        Integer destinationY = y / DrawingEngine.FIGURE_SIZE;
 
-        for (CoordVector attackMove: fig.attackMoves) {
-            if (fig.vectorMove(attackMove).getPosition().equals(new Coordinates(destinationX,destinationY))) {
+        for (CoordVector attackMove: fig.allowedAttackMoves) {
+            if (fig.vectorMove(attackMove).getPosition().equals(new Coordinates(x,y))) {
                 foundLegalAttackMove = true;
             }
         }
         return foundLegalAttackMove;
     }
 
-    public boolean raidersLeapAttackOk(Figure figRaider,CoordVector leapAttackMove){
-        Integer xDir = leapAttackMove.getX()==0 ? 0 : leapAttackMove.getX() / Math.abs(leapAttackMove.getX());
-        Integer yDir = leapAttackMove.getY()==0 ? 0 : leapAttackMove.getY() / Math.abs(leapAttackMove.getY());
-        Integer xTimes =  Math.abs(leapAttackMove.getX());
-        Integer yTimes =  Math.abs(leapAttackMove.getY());
+    public boolean isFreePathInRaidersLeapAttack(Figure figRaider, CoordVector leapAttackMove){
+        // Testuje pouze, jestli je volna cesta k cili, ne, jestli je mozne zautocit na treba vlastni figuru
+        Integer xDir = leapAttackMove.getX()==0 ? 0 : leapAttackMove.getX() / abs(leapAttackMove.getX());
+        Integer yDir = leapAttackMove.getY()==0 ? 0 : leapAttackMove.getY() / abs(leapAttackMove.getY());
+        Integer xTimes =  abs(leapAttackMove.getX());
+        Integer yTimes =  abs(leapAttackMove.getY());
         Integer times = Math.max(xTimes, yTimes);
         Integer i;
         CoordVector hop;
@@ -339,30 +348,16 @@ public class Board extends ArrayList<Figure> {
         return leapAttackOk;
     }
 
-    public boolean isLegalAttackMoveComp(Player.Type me, CoordVector potentialAttackMove, Figure fig) {
-        boolean foundLegalAttackMove = false;
+    public boolean isLegalAttackOrMoveComp(Player.Type me, CoordVector potentialAttackMove, Figure fig) {
+        if (fig==null || potentialAttackMove ==null) return false;
+        Figure anotherFigureAt = getFigureAtPosition(fig.vectorMove(potentialAttackMove).getPosition().getX(), fig.vectorMove(potentialAttackMove).getPosition().getY());
 
-        Figure anotherFigureAt = getFigureAtGrid(fig.vectorMove(potentialAttackMove).getPosition().getX(), fig.vectorMove(potentialAttackMove).getPosition().getY());
-
-        for (CoordVector attackMove: fig.attackMoves) {
-            if (fig.vectorMove(potentialAttackMove).getPosition().getX()>=0 & fig.vectorMove(potentialAttackMove).getPosition().getY()>=0
-                    & fig.vectorMove(potentialAttackMove).getPosition().getX()<=11 & fig.vectorMove(potentialAttackMove).getPosition().getY()<=11
-                    & potentialAttackMove.equals(attackMove)
-                    & raidersLeapAttackOk(fig,attackMove)) {
-                if (anotherFigureAt==null)
-                {
-                    foundLegalAttackMove = true;
-                }
-                else if  (anotherFigureAt.getPosition().equals(fig.vectorMove(attackMove).getPosition())
-                        & anotherFigureAt.getOwner().getType().equals(me)) {
-                    foundLegalAttackMove = false;
-                } else {
-                    foundLegalAttackMove = true;
-                }
-
-            }
-        }
-        return foundLegalAttackMove;
+        if (!fig.allowedAttackMoves.contains(potentialAttackMove)) return false;
+        if (fig.moveIsOutOfBoard(potentialAttackMove)) return false;
+        if (!isFreePathInRaidersLeapAttack(fig,potentialAttackMove)) return false;
+        if (anotherFigureAt==null) return true; //kdyz je na cilovem poli prazdno
+        if (anotherFigureAt.getOwner().getType().equals(me)) return false;
+        return true;
     }
 
 
@@ -376,10 +371,8 @@ public class Board extends ArrayList<Figure> {
     public boolean clickedOnHumanFigure(Integer x,Integer y) {
         boolean result = false;
         for (Figure fig : Board.this) {
-            if (    x > fig.getPosition().getX()*DrawingEngine.FIGURE_SIZE &
-                    x < (fig.getPosition().getX()+1)*DrawingEngine.FIGURE_SIZE &
-                    y > fig.getPosition().getY()*DrawingEngine.FIGURE_SIZE &
-                    y < (fig.getPosition().getY()+1)*DrawingEngine.FIGURE_SIZE &
+            if (    x.equals(fig.getPosition().getX()) &&
+                    y.equals(fig.getPosition().getY()) &&
                     fig.getOwner().getType().equals(Player.Type.HUMAN)) {
                 result = true;
             }
@@ -389,10 +382,8 @@ public class Board extends ArrayList<Figure> {
     public boolean clickedOnComputerFigure(Integer x,Integer y) {
         boolean result = false;
         for (Figure fig : Board.this) {
-            if (    x > fig.getPosition().getX()*DrawingEngine.FIGURE_SIZE &
-                    x < (fig.getPosition().getX()+1)*DrawingEngine.FIGURE_SIZE &
-                    y > fig.getPosition().getY()*DrawingEngine.FIGURE_SIZE &
-                    y < (fig.getPosition().getY()+1)*DrawingEngine.FIGURE_SIZE &
+            if (    x.equals(fig.getPosition().getX()) &&
+                    y.equals(fig.getPosition().getY()) &&
                     fig.getOwner().getType().equals(Player.Type.COMPUTER)) {
                 result = true;
             }
@@ -402,32 +393,17 @@ public class Board extends ArrayList<Figure> {
 
     public void selectFigure(Integer x, Integer y) {
         for (Figure fig : Board.this) {
-            if (    x > fig.getPosition().getX()*DrawingEngine.FIGURE_SIZE &
-                    x < (fig.getPosition().getX()+1)*DrawingEngine.FIGURE_SIZE &
-                    y > fig.getPosition().getY()*DrawingEngine.FIGURE_SIZE &
-                    y < (fig.getPosition().getY()+1)*DrawingEngine.FIGURE_SIZE) {
+            if (    x.equals(fig.getPosition().getX()) &&
+                    y.equals(fig.getPosition().getY())) {
                 fig.turnSelected();
             }
         }
     }
 
-    public Figure getFigureAtPixel(Integer x, Integer y) {
+    public Figure getFigureAtPosition(Integer x, Integer y) {
         Figure result=null;
         for (Figure fig : Board.this) {
-            if (    x > fig.getPosition().getX()*DrawingEngine.FIGURE_SIZE &
-                    x < (fig.getPosition().getX()+1)*DrawingEngine.FIGURE_SIZE &
-                    y > fig.getPosition().getY()*DrawingEngine.FIGURE_SIZE &
-                    y < (fig.getPosition().getY()+1)*DrawingEngine.FIGURE_SIZE) {
-                result = fig;
-            }
-        }
-        return result;
-    }
-
-    public Figure getFigureAtGrid(Integer x, Integer y) {
-        Figure result=null;
-        for (Figure fig : this) {
-            if (    x.equals(fig.getPosition().getX()) &
+            if (    x.equals(fig.getPosition().getX()) &&
                     y.equals(fig.getPosition().getY())) {
                 result = fig;
             }
@@ -435,7 +411,7 @@ public class Board extends ArrayList<Figure> {
         return result;
     }
 
-    public Figure getFigureAtGrid(Coordinates coord) {
+    public Figure getFigureAtPosition(Coordinates coord) {
         Figure result=null;
         for (Figure fig : this) {
             if (    coord.getX().equals(fig.getPosition().getX()) &
@@ -487,9 +463,11 @@ public class Board extends ArrayList<Figure> {
     public void randomComputerTurn(){
         Figure movingFigure=null;
         Coordinates finalDest=null;
+        Collections.shuffle(Board.this);
         for (Figure figToMove: Board.this) {
             if (figToMove.getOwner().getType().equals(Player.Type.COMPUTER)){
-                for (CoordVector move: figToMove.moves ) {
+                Collections.shuffle(figToMove.allowedMoves);
+                for (CoordVector move: figToMove.allowedMoves) {
                     Coordinates destination;
                     destination = figToMove.getPosition().moveCoordinates(move);
                     if (destination.isInsideBattlefield() & this.isFreePosition(destination)) {

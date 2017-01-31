@@ -38,9 +38,9 @@ public class TestAI {
     @Test
     public void testIsLegalAttackMoveComp() {
         AI testAI = new AI(testBoard);
-        testAI.addDeeperNodes(1);
+        testAI.addDeeperNodes(0);
         System.out.println("ok");
-        //assertEquals("Result", true, testBoard.isLegalAttackMoveComp(aMove0,testBoard.get(0)));
+        //assertEquals("Result", true, testBoard.isLegalAttackOrMoveComp(aMove0,testBoard.get(0)));
 
     }
 
