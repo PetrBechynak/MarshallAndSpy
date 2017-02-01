@@ -162,6 +162,7 @@ public class Board extends ArrayList<Figure> {
         }
 
     }
+
     @Override
     public String toString(){
     String s = "";
@@ -261,9 +262,10 @@ public class Board extends ArrayList<Figure> {
     };
 
     // vraci board takovej, jak by vypadal, kdyby figura movingFigure zautocila s vektorem attackMove
-    public Board getNewBoardMoveOrAttackCompFig(CoordVector attackMove, Figure movingFigure){
+    public Board getNewBoardMoveOrAttackCompFig(CoordVector attackMove, Figure referenceFigure){
         Board newBoard = this.stream().map(Figure::deepClone).collect(toCollection(Board::new));
-
+        Figure movingFigure = newBoard.getFigureAtPosition(referenceFigure.getPosition());
+        assert(newBoard != this);
          Figure figureAtDestination = newBoard.getFigureAtPosition(movingFigure.vectorMove(attackMove).getPosition());
         // Nejezdec jde na volne pole
         if (figureAtDestination==null && !movingFigure.isType(Figure.FigureType.RAIDER)) {
@@ -348,7 +350,11 @@ public class Board extends ArrayList<Figure> {
         return leapAttackOk;
     }
 
-    public boolean isLegalAttackOrMoveComp(Player.Type me, CoordVector potentialAttackMove, Figure fig) {
+    public boolean isLegalAttackOrMoveComp(Player.Type me, CoordVector potentialAttackMove, Figure realFig) {
+        // vytvorim si virtualni figuru virtFig, abych nehybal s fig, jelikoy to je reference na skutecnou figuru
+        // a behem testu na pohyby by se mi skutecne hybala
+
+        Figure fig = realFig.deepClone();
         if (fig==null || potentialAttackMove ==null) return false;
         Figure anotherFigureAt = getFigureAtPosition(fig.vectorMove(potentialAttackMove).getPosition().getX(), fig.vectorMove(potentialAttackMove).getPosition().getY());
 

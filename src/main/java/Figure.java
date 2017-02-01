@@ -208,7 +208,7 @@ public class Figure {
     }
 
     public Figure vectorMove(CoordVector coordvector) {
-        return new Figure(this.type,this.getOwner(),this.getPosition().moveCoordinates(coordvector));
+        return new Figure(this.type,this.getOwner(),new Coordinates().set(this.getPosition()).moveCoordinates(coordvector));
     }
 
     public boolean isSelected() {

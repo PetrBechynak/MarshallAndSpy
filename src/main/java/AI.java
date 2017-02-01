@@ -1,6 +1,7 @@
 package main.java;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by petr on 25.12.15.
@@ -35,60 +36,15 @@ public class AI {
     }
 
     public Board getBestMove() {
-        Integer maxDepth = getMaxDepth();
-        double maxEval = 1000.0;
-        double minEval = -1000.0;
-        Move move=null;
-        Node bestLeaf=null;
-        Node bestLeaf2=null;
-        Node bestLeaf3=null;
-        Node worstLeaf=null;
+        writeTreeEvaluation();
+        // pristi tahy jsou ulozeny v nodech s hloubkou 1
+        Optional<Node> maxEvaluatedNode = nodes.stream()
+                .filter(a->a.getDepth().equals(1))
+                .max(Comparator.naturalOrder());
+        return maxEvaluatedNode.get();
+    }
 
-        Node nextMove;
-        Integer i=0;
-
-        for (Node node:nodes) {
-            if (node.getDepth().equals(maxDepth)){
-                //System.out.println("-------------------");
-                //System.out.println("Depth: " + node.getDepth());
-                //System.out.println(node.toString());
-                //System.out.println(node.getEvaluation());
-                if (node.getEvaluation()<maxEval) {
-                    bestLeaf3=bestLeaf2;
-                    bestLeaf2=bestLeaf;
-                    bestLeaf=node;
-                    maxEval=node.getEvaluation();
-                }
-                if (node.getEvaluation()<minEval) {
-                    worstLeaf=node;
-                    minEval=node.getEvaluation();
-                }
-            }
-        }
-
-        nextMove = bestLeaf;
-        // depth=0 <=> aktualni tah, hledame tedy depth 1, coz je pristi tah
-        while (nextMove.depth>1){
-            for (Node parentNode: nodes) {
-                //System.out.println("i:" + i + " depth: " + parentNode.getDepth()+ " eval: "+parentNode.getEvaluation());
-
-                if (parentNode.getId().equals(nextMove.getParentId())){
-                    //System.out.println("i:" + i + " depth: " + parentNode.getDepth()+ " eval: "+parentNode.getEvaluation());
-                    System.out.println("-------------------- depth "+(i-1));
-                    System.out.println(parentNode);
-                    nextMove=parentNode;
-                    break;
-                }
-
-            }
-        }
-        //System.out.println("-------------------");
-        //System.out.println("Depth: " + bestLeaf.getDepth());
-        //System.out.println(bestLeaf.toString());
-        //System.out.println(bestLeaf.getEvaluation());
-
-
-        return nextMove;
+    public void writeTreeEvaluation(){
 
     }
 
@@ -118,21 +74,17 @@ public class AI {
 
     public void addDeeperNodes(Integer depth){
         ArrayList<Node> nodesToAdd = new ArrayList<>();
-        ArrayList<Node> revertedNodesToAdd = new ArrayList<>();
         Node newNode = null;
-        main.java.Player.Type me = null;
         double sumEval = 0;
-        Integer count = 0;
-        if ((depth % 2) != 1) {
-            me = main.java.Player.Type.COMPUTER;
-        } else {
-            me = Player.Type.HUMAN;
-        }
+        Player.Type me = ((depth % 2) != 1) ? Player.Type.COMPUTER : Player.Type.HUMAN;
+        Player.Type finalMe = me;
 
-        for (Node node: this.nodes){
-            if (node.getDepth().equals(depth)){
-              for (Figure fig: node){
-                 for (CoordVector attackMove: fig.allowedAttackMoves) {
+        List<Node> previousNodes = this.nodes.stream().filter(a->a.getDepth().equals(depth)).collect(Collectors.toList());
+
+        for (Node node: previousNodes){
+            List<Figure> myFigures = node.stream().filter(a->a.getOwner().getType().equals(finalMe)).collect(Collectors.toList());
+            for (Figure fig: myFigures){
+                for (CoordVector attackMove: fig.allowedAttackMoves) {
                     // kdyz muzu zautocit s figurou fig
                     if (fig.hasOwner(me) && node.isLegalAttackOrMoveComp(me, attackMove, fig)) {
                         // vytvor novy uzel s touto figurou a timto tahem, hloubka je o 1 vyssi
@@ -143,11 +95,10 @@ public class AI {
                         //System.out.println(newNode.toString());
                         nodesToAdd.add(newNode);
                         sumEval = sumEval + newNode.getEvaluation();
-                        count++;
                     }
-                 }
-              }
+                }
             }
+
         }
 
         if (me.equals(Player.Type.COMPUTER)) {
@@ -179,19 +130,26 @@ public class AI {
     }
 
 
-    public static class Node extends Board {
+    public static class Node extends Board implements Comparable{
         Board board;
-
-        Boolean isRoot = null;
         UUID parentId = null;
         Integer depth = null;
         double evaluation;
+        double minMaxEvaluation;
         UUID id = UUID.randomUUID();
         String description;
 
         @Override
         public String toString(){
-            return "Depth:" + depth + ", size:" + this.size();
+            return "Depth:" + depth + ", size:" + this.size() + " evaluation: " + evaluation;
+        }
+
+        public double getMinMaxEvaluation() {
+            return minMaxEvaluation;
+        }
+
+        public void setMinMaxEvaluation(double minMaxEvaluation) {
+            this.minMaxEvaluation = minMaxEvaluation;
         }
 
         public Board getBoard() {
@@ -253,6 +211,19 @@ public class AI {
             return equalLists;
         }
 
+        @Override
+        public int compareTo(Object o) {
+            if (!o.getClass().equals(AI.Node.class)) return 0;
+            AI.Node node = (AI.Node) o;
+            if (((AI.Node) o).getMinMaxEvaluation()>this.getMinMaxEvaluation()) {
+                return 1;
+            } else if (((AI.Node) o).getMinMaxEvaluation()<this.getMinMaxEvaluation()) {
+                return -1;
+            } else {
+                return 0;
+            }
+        }
+
     }
 
     public ProposedMove getFigureMove(){
@@ -260,3 +231,4 @@ public class AI {
     }
 
 }
+

@@ -24,6 +24,10 @@ public class Coordinates {
 
     }
 
+    public Coordinates set(Coordinates c) {
+        return new Coordinates(c.getX(),c.getY());
+    }
+
     public boolean isInsideBattlefield(){
         if (x<0 | x>11 | y<0 | y>11) {
             return false;
